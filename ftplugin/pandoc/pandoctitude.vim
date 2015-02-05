@@ -29,6 +29,13 @@ endif
 let b:did_pandoctitude = 1
 " }}}1
 
+" Compatibility Guard {{{1
+" ============================================================================
+" avoid line continuation issues (see ':help user_41.txt')
+let s:save_cpo = &cpo
+set cpo&vim
+" }}}1
+
 " Global Variables {{{1
 " ============================================================================
 let g:pandoctitude_tag_generator_path = get(g:, 'pandoctitude_tag_generator_path', 'markdown2ctags.py')
@@ -591,13 +598,6 @@ endfunction
 
 " }}}2
 
-" }}}1
-
-" Compatibility Guard {{{1
-" ============================================================================
-" avoid line continuation issues (see ':help user_41.txt')
-let s:save_cpo = &cpo
-set cpo&vim
 " }}}1
 
 " Commands {{{1
