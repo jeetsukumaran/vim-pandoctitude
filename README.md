@@ -17,8 +17,6 @@ Pandoc mode.
 - `[-`        : Move to parent header of current section (for `{count`} repeats).
 - `{count}[_` : Move to *previous* line with header-level of `{count}`.
 - `{count}]_` : Move to *next* line with header-level of `{count}`.
-- `<#`        : Decrease heading level (promote header).
-- `>#`        : Increase heading level (demote header).
 
 ### Commands
 
@@ -40,8 +38,6 @@ example to replicate the default mappings, you would define the following:
     map <buffer> [- <Plug>(PandoctitudeMoveToParentHeader)
     map <buffer> [_ <Plug>(PandoctitudeMoveToPreviousAbsoluteHeaderLevel)
     map <buffer> ]_ <Plug>(PandoctitudeMoveToNextAbsoluteHeaderLevel)
-    map <buffer> <# <Plug>(PandoctitudeHeaderPromote)
-    map <buffer> ># <Plug>(PandoctitudeHeaderDemote)
 ~~~
 
 ## Installation

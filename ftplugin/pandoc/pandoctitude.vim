@@ -449,47 +449,6 @@ endfunction
 
 " }}}3
 
-" Manipulation {{{3
-" ============================================================================
-" Convert Setex headers in range `line1 .. line2` to Atx.
-" Returns the number of conversions.
-function! s:SetexToAtx(line1, line2)
-    let l:originalNumLines = line('$')
-    execute 'silent! ' . a:line1 . ',' . a:line2 . 'substitute/\v(.*\S.*)\n\=+$/# \1/'
-    execute 'silent! ' . a:line1 . ',' . a:line2 . 'substitute/\v(.*\S.*)\n-+$/## \1/'
-    return l:originalNumLines - line('$')
-endfunction
-
-" If `a:1` is 0, decrease the level of all headers in range `line1 .. line2`.
-" Otherwise, increase the level. `a:1` defaults to `0`.
-function! s:HeaderPromote(line1, line2, ...)
-    if a:0 > 0
-        let l:increase = a:1
-    else
-        let l:increase = 0
-    endif
-    if l:increase
-        let l:forbiddenLevel = 6
-        let l:replaceLevels = [5, 1]
-        let l:levelDelta = 1
-    else
-        let l:forbiddenLevel = 1
-        let l:replaceLevels = [2, 6]
-        let l:levelDelta = -1
-    endif
-    for l:line in range(a:line1, a:line2)
-        if join(getline(l:line, l:line + 1), "\n") =~ s:levelRegexpDict[l:forbiddenLevel]
-            echomsg 'There is an h' . l:forbiddenLevel . ' at line ' . l:line . '. Aborting.'
-            return
-        endif
-    endfor
-    let l:numSubstitutions = s:SetexToAtx(a:line1, a:line2)
-    for l:level in range(replaceLevels[0], replaceLevels[1], -l:levelDelta)
-        execute 'silent! ' . a:line1 . ',' . (a:line2 - l:numSubstitutions) . 'substitute/' . s:levelRegexpDict[l:level] . '/' . repeat('#', l:level + l:levelDelta) . '/g'
-    endfor
-endfunction
-" }}}3
-
 " TOC {{{3
 " ============================================================================
 
@@ -634,12 +593,6 @@ vnoremap  <buffer> <silent> <Plug>(PandoctitudeMoveToPreviousAbsoluteHeaderLevel
 noremap   <buffer> <silent> <Plug>(PandoctitudeMoveToNextAbsoluteHeaderLevel) :<C-U>call <SID>Pandoctitude_MoveToNextAbsoluteHeaderLevel("n")<cr>
 vnoremap  <buffer> <silent> <Plug>(PandoctitudeMoveToNextAbsoluteHeaderLevel) :<C-U>call <SID>Pandoctitude_MoveToNextAbsoluteHeaderLevel("v")<cr>
 
-noremap   <buffer> <silent> <Plug>(PandoctitudeHeaderPromote) V:HeaderPromote<CR>
-vnoremap  <buffer> <silent> <Plug>(PandoctitudeHeaderPromote) :HeaderPromote<CR>
-
-noremap   <buffer> <silent> <Plug>(PandoctitudeHeaderDemote) V:HeaderDemote<CR>
-vnoremap  <buffer> <silent> <Plug>(PandoctitudeHeaderDemote) :HeaderDemote<CR>
-
 nnoremap <buffer>  <silent> <Plug>(PandoctitudeEchoLocation) :call <SID>Pandoctitude_EchoHierarchy()<CR>
 
 " }}}1
@@ -670,12 +623,6 @@ if !exists('g:pandoctitude_suppress_keymaps') || !g:pandoctitude_suppress_keymap
     endif
     if !hasmapto('<Plug>(PandoctitudeMoveToNextAbsoluteHeaderLevel)')
         map <buffer> ]_ <Plug>(PandoctitudeMoveToNextAbsoluteHeaderLevel)
-    endif
-    if !hasmapto('<Plug>(PandoctitudeHeaderPromote)')
-        map <buffer> <# <Plug>(PandoctitudeHeaderPromote)
-    endif
-    if !hasmapto('<Plug>(PandoctitudeHeaderDemote)')
-        map <buffer> ># <Plug>(PandoctitudeHeaderDemote)
     endif
     if !hasmapto('<Plug>(PandoctitudeEchoLocation)')
         map <buffer> gG <Plug>(PandoctitudeEchoLocation)
