@@ -208,6 +208,7 @@ function! s:Pandoctitude_EchoHierarchy()
     endwhile
     call reverse(header_lines)
     for line_content in header_lines
+        redraw
         echo line_content
     endfor
 endfunction
