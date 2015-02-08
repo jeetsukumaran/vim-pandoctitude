@@ -207,8 +207,8 @@ function! s:Pandoctitude_EchoHierarchy()
         call add(header_lines, getline(current_lnum))
     endwhile
     call reverse(header_lines)
+    redraw
     for line_content in header_lines
-        redraw
         echo line_content
     endfor
 endfunction
