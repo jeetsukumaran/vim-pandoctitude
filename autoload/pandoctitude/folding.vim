@@ -177,7 +177,7 @@ function! PandoctitudeFoldExpr()
     endif
 
     " Delegate to filetype specific functions
-    if &ft =~ "markdown" || &ft == "pandoc" || &ft == "rmd"
+    if &ft =~ "markdown" || &ft == "pandoc" || &ft == "rmd" || &ft == "rst" || &ft == "rest"
         " vim-pandoc-syntax sets this variable, so we can check if we can use
         " syntax assistance in our foldexpr function
         " if exists("g:vim_pandoc_syntax_exists") && b:pandoctitude_folding_basic != 1
@@ -276,6 +276,59 @@ function! pandoctitude#folding#MarkdownLevelSA()
     return "="
 endfunction
 
+" RST fold level {{{2
+function! pandoctitude#folding#Is_rst_heading(focal_line, test_char)
+    let title_len = len(substitute(getline(a:focal_line), '^\s*', '', ''))
+    if title_len == 0
+        return 0
+    endif
+    let is_overline = len(matchstr(getline(a:focal_line-1), '^\s*' . a:test_char . '\+')) >= title_len
+    let is_underline = len(matchstr(getline(a:focal_line+1), '^\s*' . a:test_char . '\+')) >= title_len
+    " echom "[" . getline(a:focal_line-1) . "]:" . is_overline
+    " echom "[" . getline(a:focal_line+1) . "]:" . is_underline
+    if is_overline && is_underline
+        return 2
+    elseif is_underline
+        return 1
+    else
+        return 0
+    endif
+endfunction
+
+function! pandoctitude#folding#Calc_rst_heading_level(focal_line)
+    " Sphinx style guide for heading levels:
+    " 1. # with overline
+    " 2. * with overline
+    " 3. =
+    " 4. -
+    " 5. ^
+    " 6. "
+    " if (match(getline(a:focal_line+1), '#') != -1) && (match(getline(a:focal_line-1), '#') != -1)
+    "     return 1
+    " elseif (match(getline(a:focal_line+1), '=') != -1)
+    "     return 2
+    " elseif (match(getline(a:focal_line+1), '-') != -1)
+    "     return 3
+    " endif
+    " if (match(getline(a:focal_line+1), '#') != -1) && (match(getline(a:focal_line-1), '#') != -1)
+    if pandoctitude#folding#Is_rst_heading(a:focal_line, "#")
+        let level_count = 1
+    elseif pandoctitude#folding#Is_rst_heading(a:focal_line, '\*')
+        let level_count = 2
+    elseif pandoctitude#folding#Is_rst_heading(a:focal_line, "=")
+        let level_count = 3
+    elseif pandoctitude#folding#Is_rst_heading(a:focal_line, "-")
+        let level_count = 4
+    elseif pandoctitude#folding#Is_rst_heading(a:focal_line, "^")
+        let level_count = 5
+    elseif pandoctitude#folding#Is_rst_heading(a:focal_line, '"')
+        let level_count = 6
+    else
+        let level_count = 0
+    endif
+    return level_count
+endfunction
+
 " Basic foldexpr {{{2
 function! pandoctitude#folding#MarkdownLevelBasic()
     if getline(v:lnum) =~ '^#\{1,6}' && getline(v:lnum-1) =~ '^\s*$'
@@ -284,18 +337,27 @@ function! pandoctitude#folding#MarkdownLevelBasic()
         else
             return ">". len(matchstr(getline(v:lnum), '^#\{1,6}'))
         endif
-    elseif getline(v:lnum) =~ '^[^-=].\+$' && getline(v:lnum+1) =~ '^=\+$'
-        return ">1"
-    elseif getline(v:lnum) =~ '^[^-=].\+$' && getline(v:lnum+1) =~ '^-\+$'
-        if g:pandoctitude_folding_mode == 'stacked'
-            return ">1"
-        else
-            return ">2"
+    else
+        let rst_level = pandoctitude#folding#Calc_rst_heading_level(v:lnum)
+        if rst_level
+            if g:pandoctitude_folding_mode == 'stacked'
+                return ">1"
+            else
+                return ">" . rst_level
+            endif
         endif
-    elseif getline(v:lnum) =~ '^<!--.*fold-begin -->'
-        return "a1"
-    elseif getline(v:lnum) =~ '^<!--.*fold-end -->'
-        return "s1"
+    " elseif getline(v:lnum) =~ '^[^-=].\+$' && getline(v:lnum+1) =~ '^=\+$'
+    "     return ">1"
+    " elseif getline(v:lnum) =~ '^[^-=].\+$' && getline(v:lnum+1) =~ '^-\+$'
+    "     if g:pandoctitude_folding_mode == 'stacked'
+    "         return ">1"
+    "     else
+    "         return ">2"
+    "     endif
+    " elseif getline(v:lnum) =~ '^<!--.*fold-begin -->'
+    "     return "a1"
+    " elseif getline(v:lnum) =~ '^<!--.*fold-end -->'
+    "     return "s1"
     endif
     return "="
 endfunction
@@ -305,14 +367,15 @@ function! pandoctitude#folding#MarkdownFoldText()
     let c_line = getline(v:foldstart)
     let atx_title = match(c_line, '#') > -1
     if atx_title
-        return "- ". c_line
+        " let level_count = len(substitute(c_line, '\(^#\+\).*', '\1', 'g')) - 1
+        let level_count = len(matchstr(c_line, '^#\{1,6}')) - 1
+        let c_line = substitute(c_line, '^#\+[^#]', '', 'g')
+        let leader = repeat(" ", (level_count * 2))
+        return leader . '- ' . c_line
     else
-        if match(getline(v:foldstart+1), '=') != -1
-            let level_mark = '#'
-        else
-            let level_mark = '##'
-        endif
-        return "- ". level_mark. ' '.c_line
+        let level_count = pandoctitude#folding#Calc_rst_heading_level(v:foldstart)
+        let leader = repeat(" ", (level_count * 2))
+        return leader . '- ' . c_line
     endif
 endfunction
 
