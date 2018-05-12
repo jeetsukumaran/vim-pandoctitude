@@ -315,14 +315,6 @@ function! pandoctitude#folding#Calc_rst_heading_level(focal_line)
     " 4. -
     " 5. ^
     " 6. "
-    " if (match(getline(a:focal_line+1), '#') != -1) && (match(getline(a:focal_line-1), '#') != -1)
-    "     return 1
-    " elseif (match(getline(a:focal_line+1), '=') != -1)
-    "     return 2
-    " elseif (match(getline(a:focal_line+1), '-') != -1)
-    "     return 3
-    " endif
-    " if (match(getline(a:focal_line+1), '#') != -1) && (match(getline(a:focal_line-1), '#') != -1)
     " if !exists("b:pandoctitude_rst_headings")
     "     let b:pandoctitude_rst_headings = {}
     " endif
@@ -342,22 +334,6 @@ function! pandoctitude#folding#Calc_rst_heading_level(focal_line)
     else
         return 0
     endif
-    " if pandoctitude#folding#Is_rst_heading(a:focal_line, "#")
-    "     let level_count = 1
-    " elseif pandoctitude#folding#Is_rst_heading(a:focal_line, '\*')
-    "     let level_count = 2
-    " elseif pandoctitude#folding#Is_rst_heading(a:focal_line, "=")
-    "     let level_count = 3
-    " elseif pandoctitude#folding#Is_rst_heading(a:focal_line, "-")
-    "     let level_count = 4
-    " elseif pandoctitude#folding#Is_rst_heading(a:focal_line, "^")
-    "     let level_count = 5
-    " elseif pandoctitude#folding#Is_rst_heading(a:focal_line, '"')
-    "     let level_count = 6
-    " else
-    "     let level_count = 0
-    " endif
-    " return level_count
 endfunction
 
 " Basic foldexpr {{{2
