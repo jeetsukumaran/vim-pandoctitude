@@ -278,21 +278,36 @@ endfunction
 
 " RST fold level {{{2
 function! pandoctitude#folding#Is_rst_heading(focal_line, test_char)
-    let title_len = len(substitute(getline(a:focal_line), '^\s*', '', ''))
+    if getline(a:focal_line) =~ '^\s*'.a:test_char.'\{3,}'
+        let overline_lnum = a:focal_line
+        let title_line_lnum = a:focal_line + 1
+        let underline_lnum = a:focal_line + 2
+        let is_overline_line = 1
+    else
+        let overline_lnum = a:focal_line - 1
+        let title_line_lnum = a:focal_line
+        let underline_lnum = a:focal_line + 1
+        let is_overline_line = 0
+    endif
+    let title_len = len(substitute(getline(title_line_lnum), '^\s*', '', ''))
     if title_len == 0
         return 0
     endif
-    let is_overline = len(matchstr(getline(a:focal_line-1), '^\s*' . a:test_char . '\+')) >= title_len
-    let is_underline = len(matchstr(getline(a:focal_line+1), '^\s*' . a:test_char . '\+')) >= title_len
-    " echom "[" . getline(a:focal_line-1) . "]:" . is_overline
-    " echom "[" . getline(a:focal_line+1) . "]:" . is_underline
-    if is_overline && is_underline
-        return 2
-    elseif is_underline
-        return 1
+    let has_underline = len(matchstr(getline(underline_lnum), '^\s*' . a:test_char . '\+')) >= title_len
+    let has_overline = len(matchstr(getline(overline_lnum), '^\s*' . a:test_char . '\+')) >= title_len
+    if is_overline_line && has_overline && has_underline
+        let rval =  2
+    elseif has_overline && has_underline
+        let rval =  0 " because we captured it previously
+    elseif has_underline
+        let rval =  1
     else
-        return 0
+        let rval =  0
     endif
+    if a:focal_line < 10
+        echom a:focal_line . ": (" . a:test_char . ") " . rval . " ---> " . has_underline . ", " . has_overline . ", " . is_overline_line
+    endif
+    return rval
 endfunction
 
 function! pandoctitude#folding#Calc_rst_heading_level(focal_line)
@@ -373,6 +388,10 @@ function! pandoctitude#folding#MarkdownFoldText()
         let leader = repeat(" ", (level_count * 2))
         return leader . '- ' . c_line
     else
+        if c_line =~ '^\s*[#*=-^".]\{3,}'
+            " fold start is actually an overline, so grab next line for title
+            let c_line = getline(v:foldstart + 1)
+        endif
         let level_count = pandoctitude#folding#Calc_rst_heading_level(v:foldstart)
         let leader = repeat(" ", (level_count * 2))
         return leader . '- ' . c_line
