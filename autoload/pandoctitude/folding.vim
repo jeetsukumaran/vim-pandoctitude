@@ -315,16 +315,16 @@ function! pandoctitude#folding#Calc_rst_heading_level(focal_line)
     " 4. -
     " 5. ^
     " 6. "
-    " if !exists("b:pandoctitude_rst_headings")
-    "     let b:pandoctitude_rst_headings = {}
-    " endif
+    if !exists("b:pandoctitude_rst_headings")
+        let b:pandoctitude_rst_headings = {}
+    endif
     let found = 0
     let level_count = 0
     for hc in ['#', '\*', '=', '-', '^', '"']
         let level_count = level_count + 1
         let result = pandoctitude#folding#Is_rst_heading(a:focal_line, hc)
         if result
-            " let b:pandoctitude_rst_headings[focal_line] = result
+            let b:pandoctitude_rst_headings[a:focal_line] = [level_count, result]
             let found = 1
             break
         endif
@@ -353,18 +353,6 @@ function! pandoctitude#folding#MarkdownLevelBasic()
                 return ">" . rst_level
             endif
         endif
-    " elseif getline(v:lnum) =~ '^[^-=].\+$' && getline(v:lnum+1) =~ '^=\+$'
-    "     return ">1"
-    " elseif getline(v:lnum) =~ '^[^-=].\+$' && getline(v:lnum+1) =~ '^-\+$'
-    "     if g:pandoctitude_folding_mode == 'stacked'
-    "         return ">1"
-    "     else
-    "         return ">2"
-    "     endif
-    " elseif getline(v:lnum) =~ '^<!--.*fold-begin -->'
-    "     return "a1"
-    " elseif getline(v:lnum) =~ '^<!--.*fold-end -->'
-    "     return "s1"
     endif
     return "="
 endfunction
@@ -380,11 +368,13 @@ function! pandoctitude#folding#MarkdownFoldText()
         let leader = repeat(" ", (level_count * 2))
         return leader . '- ' . c_line
     else
-        if c_line =~ '^\s*[#*=-^".]\{3,}'
+        let stored_heading_calc = get(b:pandoctitude_rst_headings, v:foldstart, [0,0])
+        let level_count = stored_heading_calc[0]
+        " if c_line =~ '^\s*[#*=-^".]\{3,}'
+        if stored_heading_calc[1] == 2
             " fold start is actually an overline, so grab next line for title
             let c_line = getline(v:foldstart + 1)
         endif
-        let level_count = pandoctitude#folding#Calc_rst_heading_level(v:foldstart)
         let leader = repeat(" ", (level_count * 2))
         return leader . '- ' . c_line
     endif
