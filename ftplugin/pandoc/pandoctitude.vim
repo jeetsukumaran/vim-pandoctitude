@@ -651,6 +651,11 @@ if !empty(g:pandoctitude_tag_generator_path) && executable(g:pandoctitude_tag_ge
 endif
 " }}}1
 
+" Folding {{{1
+" ============================================================================
+call pandoctitude#folding#Init()
+" }}}1
+
 " Restore State {{{1
 " ============================================================================
 " restore options
