@@ -277,7 +277,7 @@ function! pandoctitude#folding#MarkdownLevelSA()
 endfunction
 
 " RST fold level {{{2
-function! pandoctitude#folding#Is_rst_heading(focal_line, test_char)
+function! pandoctitude#folding#_is_rst_heading(focal_line, test_char)
     if getline(a:focal_line) =~ '^\s*'.a:test_char.'\{3,}'
         let overline_lnum = a:focal_line
         let title_line_lnum = a:focal_line + 1
@@ -307,7 +307,7 @@ function! pandoctitude#folding#Is_rst_heading(focal_line, test_char)
     return rval
 endfunction
 
-function! pandoctitude#folding#Calc_rst_heading_level(focal_line)
+function! pandoctitude#folding#_calc_rst_heading_level(focal_line)
     " Sphinx style guide for heading levels:
     " 1. # with overline
     " 2. * with overline
@@ -322,7 +322,7 @@ function! pandoctitude#folding#Calc_rst_heading_level(focal_line)
     let level_count = 0
     for hc in ['#', '\*', '=', '-', '^', '"']
         let level_count = level_count + 1
-        let result = pandoctitude#folding#Is_rst_heading(a:focal_line, hc)
+        let result = pandoctitude#folding#_is_rst_heading(a:focal_line, hc)
         if result
             let b:pandoctitude_rst_headings[a:focal_line] = [level_count, result]
             let found = 1
@@ -345,7 +345,7 @@ function! pandoctitude#folding#MarkdownLevelBasic()
             return ">". len(matchstr(getline(v:lnum), '^#\{1,6}'))
         endif
     else
-        let rst_level = pandoctitude#folding#Calc_rst_heading_level(v:lnum)
+        let rst_level = pandoctitude#folding#_calc_rst_heading_level(v:lnum)
         if rst_level
             if g:pandoctitude_folding_mode == 'stacked'
                 return ">1"
