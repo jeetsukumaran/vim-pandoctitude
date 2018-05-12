@@ -304,9 +304,6 @@ function! pandoctitude#folding#Is_rst_heading(focal_line, test_char)
     else
         let rval =  0
     endif
-    if a:focal_line < 10
-        echom a:focal_line . ": (" . a:test_char . ") " . rval . " ---> " . has_underline . ", " . has_overline . ", " . is_overline_line
-    endif
     return rval
 endfunction
 
@@ -326,22 +323,41 @@ function! pandoctitude#folding#Calc_rst_heading_level(focal_line)
     "     return 3
     " endif
     " if (match(getline(a:focal_line+1), '#') != -1) && (match(getline(a:focal_line-1), '#') != -1)
-    if pandoctitude#folding#Is_rst_heading(a:focal_line, "#")
-        let level_count = 1
-    elseif pandoctitude#folding#Is_rst_heading(a:focal_line, '\*')
-        let level_count = 2
-    elseif pandoctitude#folding#Is_rst_heading(a:focal_line, "=")
-        let level_count = 3
-    elseif pandoctitude#folding#Is_rst_heading(a:focal_line, "-")
-        let level_count = 4
-    elseif pandoctitude#folding#Is_rst_heading(a:focal_line, "^")
-        let level_count = 5
-    elseif pandoctitude#folding#Is_rst_heading(a:focal_line, '"')
-        let level_count = 6
+    " if !exists("b:pandoctitude_rst_headings")
+    "     let b:pandoctitude_rst_headings = {}
+    " endif
+    let found = 0
+    let level_count = 0
+    for hc in ['#', '\*', '=', '-', '^', '"']
+        let level_count = level_count + 1
+        let result = pandoctitude#folding#Is_rst_heading(a:focal_line, hc)
+        if result
+            " let b:pandoctitude_rst_headings[focal_line] = result
+            let found = 1
+            break
+        endif
+    endfor
+    if found
+        return level_count
     else
-        let level_count = 0
+        return 0
     endif
-    return level_count
+    " if pandoctitude#folding#Is_rst_heading(a:focal_line, "#")
+    "     let level_count = 1
+    " elseif pandoctitude#folding#Is_rst_heading(a:focal_line, '\*')
+    "     let level_count = 2
+    " elseif pandoctitude#folding#Is_rst_heading(a:focal_line, "=")
+    "     let level_count = 3
+    " elseif pandoctitude#folding#Is_rst_heading(a:focal_line, "-")
+    "     let level_count = 4
+    " elseif pandoctitude#folding#Is_rst_heading(a:focal_line, "^")
+    "     let level_count = 5
+    " elseif pandoctitude#folding#Is_rst_heading(a:focal_line, '"')
+    "     let level_count = 6
+    " else
+    "     let level_count = 0
+    " endif
+    " return level_count
 endfunction
 
 " Basic foldexpr {{{2
