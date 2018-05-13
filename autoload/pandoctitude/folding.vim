@@ -293,8 +293,8 @@ function! pandoctitude#folding#_is_rst_heading(focal_line, test_char)
     if title_len == 0
         return 0
     endif
-    let has_underline = len(matchstr(getline(underline_lnum), '^\s*' . a:test_char . '\+')) >= title_len
-    let has_overline = len(matchstr(getline(overline_lnum), '^\s*' . a:test_char . '\+')) >= title_len
+    let has_underline = (len(matchstr(getline(underline_lnum), '^\s*' . a:test_char . '\+\s*$')) >= title_len) && (len(matchstr(getline(underline_lnum), '^\s*')) == len(matchstr(getline(title_line_lnum), '^\s*')))
+    let has_overline = (len(matchstr(getline(overline_lnum), '^\s*' . a:test_char . '\+\s*$')) >= title_len) && (len(matchstr(getline(overline_lnum), '^\s*')) == len(matchstr(getline(title_line_lnum), '^\s*')))
     if is_overline_line && has_overline && has_underline
         let rval =  2
     elseif has_overline && has_underline
