@@ -366,7 +366,7 @@ function! pandoctitude#folding#MarkdownFoldText()
         let level_count = len(matchstr(c_line, '^#\{1,6}')) - 1
         let c_line = substitute(c_line, '^#\+[^#]', '', 'g')
         let leader = repeat(" ", (level_count * 2))
-        return leader . '- ' . c_line
+        return leader . '- ' . c_line . ' '
     else
         let stored_heading_calc = get(b:pandoctitude_rst_headings, v:foldstart, [0,0])
         let level_count = stored_heading_calc[0]
@@ -376,7 +376,7 @@ function! pandoctitude#folding#MarkdownFoldText()
             let c_line = getline(v:foldstart + 1)
         endif
         let leader = repeat(" ", (level_count * 2))
-        return leader . '- ' . c_line
+        return leader . '- ' . c_line . ' '
     endif
 endfunction
 
