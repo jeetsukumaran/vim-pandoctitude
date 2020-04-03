@@ -59,6 +59,7 @@ augroup pandoctitude
     endif
     if g:pandoctitude_claim_rst
         au BufNewFile,BufRead *.rst call s:Pandoctitude_ClaimFiletype()
+        au BufNewFile,BufRead *.rst set commentstring=..\ %s
     endif
 augroup END
 
