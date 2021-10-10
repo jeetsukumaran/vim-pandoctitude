@@ -20,11 +20,20 @@ set cpo&vim
 let g:pandoctitude_claim_markdown = get(g:, "pandoctitude_claim_markdown", 1)
 let g:pandoctitude_claim_text = get(g:, "pandoctitude_claim_text", 1)
 let g:pandoctitude_claim_rst = get(g:, "pandoctitude_claim_rst", 1)
+let g:pandoctitude_exclude_file_patterns = get(g:, "pandoctitude_exclude_file_patterns", [])
 " }}}1
 
 " Functions {{{1
 " ============================================================================
 function! s:Pandoctitude_ClaimFiletype()
+
+    let fname = expand("%")
+    for excp in g:pandoctitude_exclude_file_patterns
+        if match(fname, excp) >= 0
+            return
+        endif
+    endfor
+
     if &ft == "cmake"
         return
     endif
